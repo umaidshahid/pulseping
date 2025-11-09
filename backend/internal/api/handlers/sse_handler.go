@@ -37,7 +37,7 @@ func (h *SSEHandler) StreamResults(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Println("client disconnected")
+			// fmt.Println("client disconnected")
 			return
 		case msg := <-h.Broadcast:
 			data, _ := json.Marshal(msg)

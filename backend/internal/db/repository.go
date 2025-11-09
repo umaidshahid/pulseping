@@ -2,10 +2,13 @@ package db
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/umaidshahid/pulseping/internal/models"
 )
+
+var ErrNotFound = errors.New("not found")
 
 type Repository struct {
 	pool *pgxpool.Pool
@@ -49,4 +52,20 @@ func (r *Repository) GetMonitors(ctx context.Context, userID string) ([]models.M
 	}
 
 	return monitors, nil
+}
+
+func (r *Repository) DeleteMonitor(ctx context.Context, id int, userID string) error {
+	query := `
+		DELETE FROM monitors
+		WHERE id = $1 AND user_id = $2;
+	`
+	result, err := r.pool.Exec(ctx, query, id, userID)
+	if err != nil {
+		return err
+	}
+	
+	if result.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
 }

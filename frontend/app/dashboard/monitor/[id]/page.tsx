@@ -3,16 +3,25 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/context/AuthContext";
 
 export default function MonitorDetail() {
   const { id } = useParams<{ id: string }>();
+  const { token, loading } = useAuth();
   const [results, setResults] = useState<any[]>([]);
   const [info, setInfo] = useState<any>(null);
 
   // Fetch monitor info
   useEffect(() => {
+    if (!token) return;
     const fetchInfo = async () => {
-      const res = await fetch("http://localhost:8080/api/monitors");
+      const res = await fetch("http://localhost:8080/api/monitors", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        console.error("Failed to fetch monitor info:", res.status);
+        return;
+      }
       const data = await res.json();
       const match = Array.isArray(data)
         ? data.find((m: any) => String(m.id) === String(id))
@@ -20,7 +29,7 @@ export default function MonitorDetail() {
       setInfo(match);
     };
     fetchInfo();
-  }, [id]);
+  }, [id, token]);
 
   // Listen to SSE
   useEffect(() => {
@@ -93,7 +102,7 @@ export default function MonitorDetail() {
               >
                 <span>{new Date(r.checked_at).toLocaleTimeString()}</span>
                 <span>
-                  {r.status_code} — {r.latency_ms}ms
+                  <span className="font-medium">Status:</span> {r.status_code} &nbsp;|&nbsp; <span className="font-medium">Latency:</span> {r.latency_ms}ms
                 </span>
               </div>
             ))}

@@ -26,9 +26,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const idToken = await getIdToken(firebaseUser, true);
         setUser(firebaseUser);
         setToken(idToken);
+        
+        // Only redirect to dashboard if we're on the login or signup page
+        const path = window.location.pathname;
+        if (path === '/login' || path === '/signup') {
+          window.location.href = '/dashboard';
+        }
       } else {
         setUser(null);
         setToken(null);
+        
+        // If we're on a protected route, redirect to login
+        const path = window.location.pathname;
+        if (path.startsWith('/dashboard')) {
+          window.location.href = '/login';
+        }
       }
       setLoading(false);
     });

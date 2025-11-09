@@ -37,6 +37,8 @@ func NewRouter(conn *pgxpool.Pool) http.Handler {
 	r.Route("/api", func(api chi.Router) {
 		api.With(middleware.FirebaseAuth).Post("/monitors", h.CreateMonitor)
 		api.With(middleware.FirebaseAuth).Get("/monitors", h.GetMonitors)
+		api.With(middleware.FirebaseAuth).Delete("/monitors/{id}", h.DeleteMonitor)
+		// api.With(middleware.FirebaseAuth).Get("/monitors/{id}/uptime", h.GetMonitorUptime)
 
 		// Live stream of results
 		api.Get("/results/stream", sseHandler.StreamResults)

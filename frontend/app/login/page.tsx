@@ -18,7 +18,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push("/dashboard");
+      // Don't navigate immediately - let AuthContext handle it
     } catch (err: any) {
       setError(err.message);
     }

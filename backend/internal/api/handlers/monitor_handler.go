@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
+
+	"github.com/go-chi/chi/v5"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/umaidshahid/pulseping/internal/db"
@@ -72,3 +75,33 @@ func (h *MonitorHandler) GetMonitors(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(monitors)
 }
 
+func (h *MonitorHandler) DeleteMonitor(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value("userID").(string)
+	if !ok || userID == "" {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Get monitor ID from URL params
+	monitorIDStr := chi.URLParam(r, "id")
+	monitorID, err := strconv.Atoi(monitorIDStr)
+	if err != nil {
+		http.Error(w, "invalid monitor ID", http.StatusBadRequest)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = h.repo.DeleteMonitor(ctx, monitorID, userID)
+	if err != nil {
+		if err == db.ErrNotFound {
+			http.Error(w, "monitor not found", http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
