@@ -28,9 +28,18 @@ func (h *MonitorHandler) CreateMonitor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// ✅ Extract Firebase user ID
+	userID, ok := r.Context().Value("userID").(string)
+	if !ok || userID == "" {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+	m.UserID = userID
+
 	if m.IntervalSeconds == 0 {
 		m.IntervalSeconds = 60
 	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -39,14 +48,22 @@ func (h *MonitorHandler) CreateMonitor(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	w.WriteHeader(http.StatusCreated)
 }
 
+
 func (h *MonitorHandler) GetMonitors(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value("userID").(string)
+	if !ok || userID == "" {
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	monitors, err := h.repo.GetMonitors(ctx)
+	monitors, err := h.repo.GetMonitors(ctx, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -54,3 +71,4 @@ func (h *MonitorHandler) GetMonitors(w http.ResponseWriter, r *http.Request) {
 
 	json.NewEncoder(w).Encode(monitors)
 }
+

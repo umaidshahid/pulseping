@@ -10,9 +10,12 @@ import (
 	"github.com/umaidshahid/pulseping/internal/api"
 	"github.com/umaidshahid/pulseping/internal/db"
 	"github.com/umaidshahid/pulseping/internal/scheduler" 
+	"github.com/umaidshahid/pulseping/internal/auth"
 )
 
 func main() {
+	// Init Firebase
+	auth.InitFirebase()
 	// Load env vars
 	err := godotenv.Load()
 	if err != nil {

@@ -7,5 +7,6 @@ type Monitor struct {
 	URL             string    `json:"url"`
 	Method          string    `json:"method"`
 	IntervalSeconds int       `json:"interval_seconds"`
+	UserID          string    `json:"user_id"` // ✅ add this
 	CreatedAt       time.Time `json:"created_at"`
 }
